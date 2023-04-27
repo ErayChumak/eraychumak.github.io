@@ -1,15 +1,58 @@
 const players = [];
 const foods = [];
 
-class Food {
+class Sprite {
+  isTouching(s, me = this) {
+    const d = dist(me.x, me.y, s.x, s.y);
+    return d < (me.r + s.r);
+  }
+
+  randomCoord() {
+    return round(random(this.w, width - this.w));
+  }
+}
+
+class Food extends Sprite {
   constructor() {
-    this.w = 10;
-    this.h = 10;
+    super();
+
+    this.r = 5;
+    this.w = this.r * 2;
+    this.h = this.r * 2;
     this.color = `rgb(${round(random(255))}, ${round(random(255))}, ${round(random(255))})`;
-    this.x = round(random((this.w / 2), width - (this.w / 2)));
-    this.y = round(random((this.h / 2), height - (this.h / 2)));
+
+    const [x, y] = this.randomFoodCoords();
+    this.x = x;
+    this.y = y;
 
     foods.push(this);
+  }
+
+  randomFoodCoords() {
+    let touching = true;
+
+    let newX;
+    let newY;
+
+    while(touching) {
+      const x = this.randomCoord();
+      const y = this.randomCoord();
+
+      for (let i = 0; i < players.length; i++) {
+        const p = players[i];
+
+        if (this.isTouching(p, { x, y, r: (this.r * 4) })) {
+          touching = true;
+          break;
+        }
+
+        newX = x;
+        newY = y;
+        touching = false;
+      }
+    }
+
+    return [newX, newY];
   }
 
   realX() {
@@ -27,15 +70,16 @@ class Food {
 
   draw() {
     fill(this.color);
-    rect(this.x, this.y, this.w, this.h, this.w / 2);
+
+    if (this.x && this.y) {
+      ellipse(this.x, this.y, this.w, this.h);
+    }
 
     players.forEach(p => {
-      if ((p.realX() + p.w) >= this.realX() && p.realX() <= (this.realX() + this.w)) {
-        if ((p.realY() + p.h) >= this.realY() && p.realY() <= (this.realY() + this.h)) {
+      if (this.isTouching(p)) {
           this.remove();
           p.grow();
         }
-      }
     });
   }
 }

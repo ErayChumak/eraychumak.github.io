@@ -87,10 +87,11 @@ class Food extends Sprite {
 class Player {
   constructor(name) {
     this.name = name;
-    this.w = round(windowHeight / 20);
-    this.h = round(windowHeight / 20);
-    this.x = this.w / 2;
-    this.y = this.h / 2;
+    this.r = round(windowHeight / 20);
+    this.w = this.r * 2;
+    this.h = this.r * 2;
+    this.x = random(this.w, width - this.w);
+    this.y = random(this.h, height - this.h);
     this.step = 2;
 
     players.push(this);

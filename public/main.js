@@ -99,17 +99,27 @@ class Player {
 
   draw() {
     fill(255, 255, 255);
-    rect(this.x, this.y, this.w, this.h, this.w / 2);
+    ellipse(this.x, this.y, this.w, this.h);
     fill(0, 0, 0);
     text(this.name, this.x, this.y);
     text(this.w, this.x, this.y + this.w / 5);
     textSize(this.w / 5);
+
     this.movementLogic();
   }
 
-  grow() {
-    this.w += 5;
-    this.h += 5;
+  shrink(count = 1) {
+    if (this.w <= 50) return;
+
+    this.w -= count;
+    this.h -= count;
+    this.r -= (count / 2)
+  }
+
+  grow(count = 3) {
+    this.w += count;
+    this.h += count;
+    this.r += (count / 2)
   }
 
   moveRight() {
@@ -168,6 +178,10 @@ function setup() {
   canvas.style('display', 'block');
   new Player("Ruth");
 
+  players.forEach(player => {
+    setInterval(() => { player.shrink() }, 500);
+  });
+
   setInterval(() => {
     new Food();
   }, 100);
@@ -175,7 +189,7 @@ function setup() {
 
 function draw() {
   background(0, 0, 0);
-  rectMode(CENTER);
+  ellipseMode(CENTER);
   textAlign(CENTER);
 
   foods.forEach(f => {

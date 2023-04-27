@@ -77,9 +77,9 @@ class Food extends Sprite {
 
     players.forEach(p => {
       if (this.isTouching(p)) {
-          this.remove();
-          p.grow();
-        }
+        this.remove();
+        p.grow();
+      }
     });
   }
 }
@@ -183,6 +183,7 @@ function setup() {
   });
 
   setInterval(() => {
+    if (foods.length >= 1000) return;
     new Food();
   }, 100);
 }

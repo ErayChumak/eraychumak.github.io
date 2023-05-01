@@ -1,14 +1,45 @@
+const socket = io();
+
+let otherPlayers = {};
+
 function setup() {
   const canvas = createCanvas(windowWidth, windowHeight);
   canvas.style("display", "block");
 
   MAP.radius = windowWidth / 100;
 
-  player = new Player();
+  player = new Player("Eray");
 
   for (let x = 0; x < 1_000; x++) {
     new Blob();
   }
+
+  socket.on("allPlayers", (newOtherPlayers) => {
+    for (const localOtherPlayer in otherPlayers) {
+      if (localOtherPlayer in newOtherPlayers) {
+        continue;
+      }
+
+      delete otherPlayers[localOtherPlayer];
+    }
+
+    for (const newOtherPlayerID in newOtherPlayers) {
+      if (newOtherPlayerID === socket.id) continue;
+
+      const localOtherPlayer = otherPlayers[newOtherPlayerID];
+      const newOtherPlayer = newOtherPlayers[newOtherPlayerID];
+
+      if (!newOtherPlayer.pos) continue;
+
+      if (localOtherPlayer) {
+        localOtherPlayer.syncRemote(newOtherPlayer.pos, newOtherPlayer.r);
+      } else {
+        const newLocalOtherPlayer = new OtherPlayer(newOtherPlayerID, newOtherPlayer.pos);
+        newLocalOtherPlayer.syncRemote(newOtherPlayer.pos, newOtherPlayer.r);
+        otherPlayers[newOtherPlayerID] = newLocalOtherPlayer;
+      }
+    }
+  });
 }
 
 function draw() {
@@ -27,10 +58,16 @@ function draw() {
   noStroke();
   strokeWeight(0);
 
-  player.draw();
-  player.update();
-
   blobs.forEach(f => {
     f.draw();
   });
+
+  for (const otherPlayer in otherPlayers) {
+    const p = otherPlayers[otherPlayer];
+    p.draw();
+  }
+
+  player.draw();
+  player.update();
+  player.sync();
 }

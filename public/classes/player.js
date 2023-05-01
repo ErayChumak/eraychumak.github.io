@@ -1,16 +1,17 @@
 class Player {
-  constructor() {
+  constructor(name) {
+    this.name = name;
     this.r = 64;
     this.minR = 64;
-    this.name = "Ruth";
     this.pos = createVector(0, 0);
     this.color = `rgb(${round(random(255))}, ${round(random(255))}, ${round(random(255))})`;
   }
 
   draw() {
     stroke(255);
-    strokeWeight(2);
+    strokeWeight(this.r * 0.03);
     fill(this.color);
+
     ellipse(this.pos.x, this.pos.y, this.r * 2, this.r * 2);
 
     noStroke();
@@ -40,8 +41,15 @@ class Player {
     const newPos = createVector(newX, newY);
 
     newPos.sub(this.pos);
-    newPos.setMag(4);
+    newPos.setMag(5);
 
     this.pos.add(newPos);
+  }
+
+  sync() {
+    socket.emit("updateLocation", {
+      pos: this.pos,
+      r: this.r
+    });
   }
 }

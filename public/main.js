@@ -110,38 +110,11 @@ class Player {
     this.movementLogic();
   }
 
-  shrink(count = 1) {
-    if (this.w <= 50) return;
+  grow(count) {
+    const sum = (PI * (this.r ** 2)) + (PI * (count ** 2));
+    const newRadius = sqrt(sum / PI);
 
-    this.w -= count;
-    this.h -= count;
-    this.r -= (count / 2)
-  }
-
-  grow(count = 3) {
-    this.w += count;
-    this.h += count;
-    this.r += (count / 2)
-  }
-
-  moveRight() {
-    this.x += this.step;
-  }
-
-  moveLeft() {
-    this.x -= this.step;
-  }
-
-  moveDown() {
-    this.y += this.step;
-  }
-
-  moveUp() {
-    this.y -= this.step;
-  }
-
-  realX() {
-    return this.x - (this.w / 2);
+    this.r = newRadius;
   }
 
   realY() {

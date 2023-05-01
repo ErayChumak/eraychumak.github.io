@@ -116,12 +116,10 @@ function draw() {
     f.draw();
   });
 
-  for (const otherPlayer in otherPlayers) {
-    const p = otherPlayers[otherPlayer];
+  allPlayersArrangement.forEach(p => {
     p.draw();
-  }
+  });
 
-  player.draw();
   player.update();
   player.sync();
 

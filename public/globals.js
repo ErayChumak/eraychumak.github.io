@@ -8,3 +8,9 @@ const MAP = {
 let player;
 
 const blobs = [];
+
+/*
+  Draw players relative to their radius
+  so they over-lap correctly based on size.
+*/
+let allPlayersArrangement = [];

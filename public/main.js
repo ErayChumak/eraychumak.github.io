@@ -39,29 +39,39 @@ function setup() {
     new Blob();
   }
 
-  socket.on("allPlayers", (newOtherPlayers) => {
-    for (const localOtherPlayer in otherPlayers) {
-      if (localOtherPlayer in newOtherPlayers) {
+  socket.on("eaten", () => {
+    playing = false;
+    prompt("You have been eaten! Continuing will re-spawn you.");
+    location.reload();
+  });
+
+  socket.on("allPlayers", (serverPlayers) => {
+    // get rid of disconnected players locally
+    for (const knownPlayerID in knownPlayers) {
+      if (knownPlayerID in serverPlayers) {
         continue;
       }
 
-      delete otherPlayers[localOtherPlayer];
+      const i = allPlayersArrangement.indexOf(knownPlayers[knownPlayerID]);
+      allPlayersArrangement.splice(i, 1);
+
+      delete knownPlayers[knownPlayerID];
     }
 
-    for (const newOtherPlayerID in newOtherPlayers) {
-      if (newOtherPlayerID === socket.id) continue;
+    // create new players and sync data with existing ones
+    for (const serverPlayerID in serverPlayers) {
+      if (serverPlayerID === socket.id) continue;
 
-      const localOtherPlayer = otherPlayers[newOtherPlayerID];
-      const newOtherPlayer = newOtherPlayers[newOtherPlayerID];
+      const serverPlayer = serverPlayers[serverPlayerID];
 
-      if (!newOtherPlayer.pos) continue;
+      if (!serverPlayer.pos) continue;
 
-      if (localOtherPlayer) {
-        localOtherPlayer.syncRemote(newOtherPlayer.pos, newOtherPlayer.r);
+      if (serverPlayerID in knownPlayers) {
+        const knownPlayer = knownPlayers[serverPlayerID];
+        knownPlayer.syncNewUpdates(serverPlayer);
       } else {
-        const newLocalOtherPlayer = new OtherPlayer(newOtherPlayerID, newOtherPlayer.pos);
-        newLocalOtherPlayer.syncRemote(newOtherPlayer.pos, newOtherPlayer.r);
-        otherPlayers[newOtherPlayerID] = newLocalOtherPlayer;
+        const knownPlayer = new OtherPlayer(serverPlayer);
+        knownPlayers[serverPlayerID] = knownPlayer;
       }
     }
   });

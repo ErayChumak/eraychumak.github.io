@@ -4,7 +4,10 @@ class Player {
     this.r = 64;
     this.minR = 64;
     this.pos = createVector(0, 0);
-    this.color = `rgb(${round(random(255))}, ${round(random(255))}, ${round(random(255))})`;
+    this.color = `rgb(${round(random(100, 255))}, ${round(random(100, 255))}, ${round(random(100, 255))})`;
+
+    allPlayersArrangement.push(this);
+    allPlayersArrangement = allPlayersArrangement.sort((p1, p2) => p1.r - p2.r);
   }
 
   draw() {
@@ -18,10 +21,12 @@ class Player {
     strokeWeight(0);
     fill(0);
     textAlign(CENTER);
+    textSize(this.r / 3);
+    stroke(255);
+    strokeWeight(this.r * 0.03);
+    text(this.name, this.pos.x, this.pos.y);
     textSize(this.r / 4);
     text(round(this.r), this.pos.x, this.pos.y + (this.r / 3));
-    textSize(this.r / 3);
-    text(this.name, this.pos.x, this.pos.y);
   }
 
   grow(count) {
@@ -29,6 +34,7 @@ class Player {
     const newRadius = sqrt(sum / PI);
 
     this.r = newRadius;
+    allPlayersArrangement = allPlayersArrangement.sort((p1, p2) => p1.r - p2.r);
   }
 
   update() {
@@ -47,7 +53,8 @@ class Player {
   }
 
   sync() {
-    socket.emit("updateLocation", {
+    socket.emit("updatePlayer", {
+      name: this.name,
       pos: this.pos,
       r: this.r
     });

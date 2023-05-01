@@ -40,11 +40,16 @@ io.on("connection", (socket) => {
   socket.on("updatePlayer", (player) => {
     p.update(player);
   });
+
+  socket.on("eat", (playerID) => {
+    console.log(socket.id, "ate", playerID)
+    socket.broadcast.to(playerID).emit("eaten");
+    socket.broadcast.to(playerID).disconnectSockets(true);
   });
 
   setInterval(() => {
     socket.emit("allPlayers", players);
-  }, 50);
+  }, 40);
 });
 
 server.listen(3000, () => {

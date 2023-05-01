@@ -1,5 +1,7 @@
-const players = [];
-const foods = [];
+const MAP = {
+  width: 5_000,
+  height: 5_000
+};
 
 class Sprite {
   isTouching(s, me = this) {
@@ -8,7 +10,7 @@ class Sprite {
   }
 
   randomCoord() {
-    return round(random(this.w, width - this.w));
+    return round(random(this.r, MAP.width));
   }
 }
 

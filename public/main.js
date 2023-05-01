@@ -1,6 +1,8 @@
 const MAP = {
   width: 5_000,
-  height: 5_000
+  height: 5_000,
+  radius: 0,
+  zoom: 1
 };
 
 let player;
@@ -114,7 +116,7 @@ class Player {
     const newPos = createVector(newX, newY);
 
     newPos.sub(this.pos);
-    newPos.setMag(3);
+    newPos.setMag(4);
 
     this.pos.add(newPos);
   }
@@ -123,6 +125,9 @@ class Player {
 function setup() {
   const canvas = createCanvas(windowWidth, windowHeight);
   canvas.style("display", "block");
+
+  MAP.radius = windowWidth / 100;
+
   player = new Player();
 
   for (let x = 0; x < 1_000; x++) {
@@ -133,12 +138,16 @@ function setup() {
 function draw() {
   background(0, 0, 0);
 
-  translate((width / 2) - player.pos.x, (height / 2) - player.pos.y);
+  MAP.zoom = lerp(MAP.zoom, player.minR*1.8 / player.r, .1);
+
+  translate(width / 2, height / 2);
+  scale(MAP.zoom);
+  translate(-player.pos.x, -player.pos.y);
 
   fill(20);
   stroke(255);
   strokeWeight(2);
-  rect(0, 0, MAP.width, MAP.height);
+  rect(0, 0, MAP.width, MAP.height, MAP.radius);
   noStroke();
   strokeWeight(0);
 

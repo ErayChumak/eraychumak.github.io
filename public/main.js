@@ -1,14 +1,39 @@
 const socket = io();
 
-let otherPlayers = {};
+let reqChangeName = false;
+let playing = false;
+
+let knownPlayers = {};
+let font;
+
+function preload() {
+  font = loadFont("./assets/sofia_sans_regular.ttf");
+}
 
 function setup() {
-  const canvas = createCanvas(windowWidth, windowHeight);
+  const username = getItem("username");
+
+  if (!username) {
+    playing = false;
+    const newUsername = prompt("Choose a username");
+
+    if (newUsername) {
+      storeItem("username", newUsername);
+    }
+
+    playing = true;
+  } else {
+    playing = true;
+  }
+
+  const canvas = createCanvas(windowWidth, windowHeight, WEBGL);
   canvas.style("display", "block");
+
+  textFont(font);
 
   MAP.radius = windowWidth / 100;
 
-  player = new Player("Eray");
+  player = new Player(getItem("username") || "Unnamed Blob");
 
   for (let x = 0; x < 1_000; x++) {
     new Blob();
@@ -43,11 +68,30 @@ function setup() {
 }
 
 function draw() {
-  background(0, 0, 0);
+  if (!playing) return;
 
-  MAP.zoom = lerp(MAP.zoom, player.minR*1.8 / player.r, .1);
+  if (reqChangeName) {
+    noLoop();
+    playing = false;
+    const newUsername = prompt("Choose a username");
 
-  translate(width / 2, height / 2);
+    if (newUsername) {
+      storeItem("username", newUsername);
+      player.name = newUsername;
+    } else {
+      removeItem("username");
+      player.name = "Unnamed Blob";
+    }
+
+    playing = true;
+    reqChangeName = false;
+    loop();
+  }
+
+  background(0);
+
+  MAP.zoom = lerp(MAP.zoom, (player.minR * 1.8) / player.r, .1);
+
   scale(MAP.zoom);
   translate(-player.pos.x, -player.pos.y);
 
@@ -70,4 +114,11 @@ function draw() {
   player.draw();
   player.update();
   player.sync();
+
+}
+
+function keyPressed() {
+  if (keyCode === ESCAPE) {
+    reqChangeName = true;
+  }
 }

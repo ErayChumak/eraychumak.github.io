@@ -16,7 +16,8 @@ class Player {
     players[id] = this;
   }
 
-  update({ pos, r }) {
+  update({ name, pos, r }) {
+    this.name = name;
     this.pos = pos;
     this.r = r;
   }
@@ -36,8 +37,9 @@ io.on("connection", (socket) => {
     players[socket.id].leave();
   });
 
-  socket.on("updateLocation", (newPos) => {
-    p.update(newPos);
+  socket.on("updatePlayer", (player) => {
+    p.update(player);
+  });
   });
 
   setInterval(() => {

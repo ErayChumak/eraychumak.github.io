@@ -6,8 +6,7 @@ const MAP = {
 };
 
 let player;
-
-const blobs = [];
+const knownBlobs = {};
 
 /*
   Draw players relative to their radius

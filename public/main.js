@@ -33,16 +33,17 @@ function setup() {
 
   MAP.radius = windowWidth / 100;
 
-  player = new Player(getItem("username") || "Unnamed Blob");
-
-  for (let x = 0; x < 1_000; x++) {
-    new Blob();
-  }
-
   socket.on("eaten", () => {
     playing = false;
     prompt("You have been eaten! Continuing will re-spawn you.");
     location.reload();
+  });
+
+  socket.on("allBlobs", (serverBlobs) => {
+    for (const serverBlobID in serverBlobs) {
+      const b = serverBlobs[serverBlobID];
+      knownBlobs[serverBlobID] = new FoodBlob(serverBlobID, b.r, b.color, b.pos);
+    }
   });
 
   socket.on("allPlayers", (serverPlayers) => {
@@ -60,9 +61,15 @@ function setup() {
 
     // create new players and sync data with existing ones
     for (const serverPlayerID in serverPlayers) {
-      if (serverPlayerID === socket.id) continue;
-
       const serverPlayer = serverPlayers[serverPlayerID];
+
+      // the client
+      if (serverPlayerID === socket.id) {
+        if (!player) {
+          player = new Player(getItem("username") || "Unnamed Blob", serverPlayer.pos);
+        }
+        continue;
+      }
 
       if (!serverPlayer.pos) continue;
 
@@ -78,7 +85,7 @@ function setup() {
 }
 
 function draw() {
-  if (!playing) return;
+  if (!playing || !player) return;
 
   if (reqChangeName) {
     noLoop();
@@ -112,9 +119,14 @@ function draw() {
   noStroke();
   strokeWeight(0);
 
-  blobs.forEach(f => {
-    f.draw();
-  });
+  for (const blobID in knownBlobs) {
+    const b = knownBlobs[blobID];
+    b.draw();
+  }
+
+  // blobs.forEach(f => {
+  //   f.draw();
+  // });
 
   allPlayersArrangement.forEach(p => {
     p.draw();

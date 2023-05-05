@@ -6,39 +6,41 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+const { ServerPlayer } = require("./classes/ServerPlayer");
+const { ServerBlob } = require("./classes/ServerBlob");
+
 app.use("/", express.static("public"));
 
 const players = {};
+const blobs = {};
 
-class Player {
-  constructor(id) {
-    this.id = id;
-    players[id] = this;
-  }
-
-  update({ name, pos, r }) {
-    this.name = name;
-    this.pos = pos;
-    this.r = r;
-  }
-
-  leave() {
-    delete players[this.id];
-  }
+for (let x = 0; x < 5000 / 5; x++) {
+  const b = new ServerBlob(x);
+  blobs[x] = b;
 }
+
+console.log(`[ORION.io] Created ${5000 / 5} food items.`);
 
 io.on("connection", (socket) => {
   console.log("[ORION.IO] Player joined:", socket.id);
 
-  const p = new Player(socket.id);
+  const player = new ServerPlayer(socket.id);
+  players[socket.id] = player;
+
+  socket.emit("allBlobs", blobs);
 
   socket.on("disconnect", () => {
     console.log("[ORION.IO] Player left:", socket.id);
-    players[socket.id].leave();
+    delete players[socket.id];
   });
 
-  socket.on("updatePlayer", (player) => {
-    p.update(player);
+  socket.on("updatePlayer", (updatedPlayer) => {
+    player.update(updatedPlayer);
+  });
+
+  socket.on("blobEaten", (blobID) => {
+    blobs[blobID].randomise();
+    io.emit("allBlobs", blobs);
   });
 
   socket.on("eat", (playerID) => {
@@ -49,7 +51,7 @@ io.on("connection", (socket) => {
 
   setInterval(() => {
     socket.emit("allPlayers", players);
-  }, 40);
+  }, 50);
 });
 
 server.listen(3000, () => {

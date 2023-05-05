@@ -16,7 +16,7 @@ class OtherPlayer {
 
   draw() {
     stroke(255);
-    strokeWeight(2);
+    strokeWeight(MAP.zoom * 4);
     fill(this.color);
 
     if (newPoses[this.id]) {

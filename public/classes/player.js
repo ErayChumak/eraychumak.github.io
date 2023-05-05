@@ -12,7 +12,7 @@ class Player {
 
   draw() {
     stroke(255);
-    strokeWeight(this.r * 0.03);
+    strokeWeight(MAP.zoom * 4);
     fill(this.color);
 
     ellipse(this.pos.x, this.pos.y, this.r * 2, this.r * 2);

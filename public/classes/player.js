@@ -1,9 +1,9 @@
 class Player {
-  constructor(name) {
+  constructor(name, pos) {
     this.name = name;
     this.r = 64;
     this.minR = 64;
-    this.pos = createVector(0, 0);
+    this.pos = createVector(pos.x, pos.y);
     this.color = `rgb(${round(random(100, 255))}, ${round(random(100, 255))}, ${round(random(100, 255))})`;
 
     allPlayersArrangement.push(this);

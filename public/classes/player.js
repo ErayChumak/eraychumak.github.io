@@ -4,29 +4,47 @@ class Player {
     this.r = 64;
     this.minR = 64;
     this.pos = createVector(pos.x, pos.y);
-    this.color = `rgb(${round(random(100, 255))}, ${round(random(100, 255))}, ${round(random(100, 255))})`;
+
+    this.rgb = {
+      r: round(random(100, 255)),
+      g: round(random(100, 255)),
+      b: round(random(100, 255)),
+    };
+
+    this.color = `rgb(${this.rgb.r}, ${round(this.rgb.g)}, ${this.rgb.b})`;
+    this.darkerColor = `rgb(${this.rgb.r - 50}, ${round(this.rgb.g - 50)}, ${this.rgb.b - 50})`;
 
     allPlayersArrangement.push(this);
     allPlayersArrangement = allPlayersArrangement.sort((p1, p2) => p1.r - p2.r);
   }
 
   draw() {
-    stroke(255);
-    strokeWeight(MAP.zoom * 4);
+    const strokeSize = MAP.zoom * 4;
+
     fill(this.color);
-
     ellipse(this.pos.x, this.pos.y, this.r * 2, this.r * 2);
+    fill(this.darkerColor);
+    ellipse(this.pos.x, this.pos.y, (this.r * 2) - (strokeSize), this.r * 2 - (strokeSize));
 
-    noStroke();
-    strokeWeight(0);
     fill(0);
     textAlign(CENTER);
+
+    // name
     textSize(this.r / 3);
-    stroke(255);
-    strokeWeight(this.r * 0.03);
     text(this.name, this.pos.x, this.pos.y);
+
+    // points
     textSize(this.r / 4);
     text(round(this.r), this.pos.x, this.pos.y + (this.r / 3));
+
+    stroke(255);
+    strokeWeight(2);
+    line(this.pos.x - this.r, this.pos.y - this.r, this.pos.x + this.r, this.pos.y - this.r); // top
+    line(this.pos.x - this.r, this.pos.y + this.r, this.pos.x + this.r, this.pos.y + this.r); // bottom
+    line(this.pos.x - this.r, this.pos.y - this.r, this.pos.x - this.r, this.pos.y + this.r); // left
+    line(this.pos.x + this.r, this.pos.y - this.r, this.pos.x + this.r, this.pos.y + this.r); // right
+    fill(255);
+    text(round(this.r * 2), this.pos.x, this.pos.y + this.r + (this.r * .5));
   }
 
   grow(count) {
@@ -38,18 +56,33 @@ class Player {
   }
 
   update() {
-    let newX = mouseX - ((width / 2) - this.pos.x);
-    let newY = mouseY - ((height / 2) - this.pos.y);
+    const goTo = createVector(
+      constrain(this.pos.x + (mouseX / MAP.zoom) - width / (MAP.zoom * 2), 0, MAP.width),
+      constrain(this.pos.y + (mouseY / MAP.zoom) - height / (MAP.zoom * 2), 0, MAP.height)
+    );
 
-    newX = constrain(newX, 0, MAP.width);
-    newY = constrain(newY, 0, MAP.height);
+    // ? MOUSE LINE - START
+    push();
+    scale(MAP.zoom - (MAP.zoom - 1));
+    beginShape();
+    strokeWeight(2);
+    stroke(255);
+    line(this.pos.x, this.pos.y, goTo.x, goTo.y);
+    endShape();
+    pop();
+    // ? MOUSE LINE - END
 
-    const newPos = createVector(newX, newY);
+    const dBetweenPlayerAndGoTo = dist(this.pos.x, this.pos.y, goTo.x, goTo.y);
 
-    newPos.sub(this.pos);
-    newPos.setMag(5);
+    goTo.sub(this.pos);
 
-    this.pos.add(newPos);
+    if (dBetweenPlayerAndGoTo <= (this.r / 2)) {
+      goTo.setMag(1);
+    } else {
+      goTo.setMag(3);
+    }
+
+    this.pos.add(goTo);
   }
 
   sync() {

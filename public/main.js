@@ -1,11 +1,3 @@
-const socket = io();
-
-let reqChangeName = false;
-let playing = false;
-
-let knownPlayers = {};
-let font;
-
 function preload() {
   font = loadFont("./assets/sofia_sans_regular.ttf");
 }
@@ -33,55 +25,11 @@ function setup() {
 
   MAP.radius = windowWidth / 100;
 
-  socket.on("eaten", () => {
-    playing = false;
-    prompt("You have been eaten! Continuing will re-spawn you.");
-    location.reload();
-  });
+  connectToServer();
 
-  socket.on("allBlobs", (serverBlobs) => {
-    for (const serverBlobID in serverBlobs) {
-      const b = serverBlobs[serverBlobID];
-      knownBlobs[serverBlobID] = new FoodBlob(serverBlobID, b.r, b.color, b.pos);
-    }
-  });
-
-  socket.on("allPlayers", (serverPlayers) => {
-    // get rid of disconnected players locally
-    for (const knownPlayerID in knownPlayers) {
-      if (knownPlayerID in serverPlayers) {
-        continue;
-      }
-
-      const i = allPlayersArrangement.indexOf(knownPlayers[knownPlayerID]);
-      allPlayersArrangement.splice(i, 1);
-
-      delete knownPlayers[knownPlayerID];
-    }
-
-    // create new players and sync data with existing ones
-    for (const serverPlayerID in serverPlayers) {
-      const serverPlayer = serverPlayers[serverPlayerID];
-
-      // the client
-      if (serverPlayerID === socket.id) {
-        if (!player) {
-          player = new Player(getItem("username") || "Unnamed Blob", serverPlayer.pos);
-        }
-        continue;
-      }
-
-      if (!serverPlayer.pos) continue;
-
-      if (serverPlayerID in knownPlayers) {
-        const knownPlayer = knownPlayers[serverPlayerID];
-        knownPlayer.syncNewUpdates(serverPlayer);
-      } else {
-        const knownPlayer = new OtherPlayer(serverPlayer);
-        knownPlayers[serverPlayerID] = knownPlayer;
-      }
-    }
-  });
+  setInterval(() => {
+    fR = round(frameRate());
+  }, 1000);
 }
 
 function draw() {
@@ -109,6 +57,8 @@ function draw() {
 
   MAP.zoom = lerp(MAP.zoom, (player.minR * 1.8) / player.r, .1);
 
+  // ? WORLD ZOOM - START
+  push()
   scale(MAP.zoom);
   translate(-player.pos.x, -player.pos.y);
 
@@ -124,17 +74,40 @@ function draw() {
     b.draw();
   }
 
-  // blobs.forEach(f => {
-  //   f.draw();
-  // });
-
   allPlayersArrangement.forEach(p => {
     p.draw();
   });
 
   player.update();
-  player.sync();
+  pop();
+  // ? WORLD ZOOM - END
 
+  let sum = 0;
+
+  for (let knownBlobID in knownBlobs) {
+    const b = knownBlobs[knownBlobID];
+
+    if (b.eaten) {
+      continue;
+    }
+
+    sum += 1;
+  }
+
+  // ? HUD - START
+  push();
+  translate(-(width / 2), -(height / 2));
+  scale(MAP.zoom - (MAP.zoom - 1));
+  textSize(16);
+  text(`HUD SCALE: ${MAP.zoom - (MAP.zoom - 1)}`, 0, 15);
+  text(`WORLD ZOOM: ${round(MAP.zoom, 2)}`, 0, 30);
+  text(`FOOD ON MAP: ${sum}`, 0, 45);
+  text(`FPS: ${fR} / ${getTargetFrameRate()}`, 0, 60);
+  text(`LATENCY: ${latency}ms`, 0, 75);
+  pop();
+  // ? HUD - END
+
+  player.sync();
 }
 
 function keyPressed() {

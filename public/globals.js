@@ -1,3 +1,5 @@
+const socket = io();
+
 const MAP = {
   width: 5_000,
   height: 5_000,
@@ -6,6 +8,7 @@ const MAP = {
 };
 
 let player;
+const knownPlayers = {};
 const knownBlobs = {};
 
 /*
@@ -13,3 +16,9 @@ const knownBlobs = {};
   so they over-lap correctly based on size.
 */
 let allPlayersArrangement = [];
+
+let reqChangeName = false;
+let playing = false;
+let font;
+let fR = 0;
+let latency = 0;

@@ -36,6 +36,19 @@ io.on("connection", (socket) => {
 
   socket.on("updatePlayer", (updatedPlayer) => {
     player.update(updatedPlayer);
+
+    for (const otherPlayerID in players) {
+      if (otherPlayerID === socket.id) continue;
+
+      const otherPlayer = players[otherPlayerID];
+
+      if (player.r + (player.r / 4) >= otherPlayer.r) return false;
+      const d = Math.sqrt((player.pos.x * player.pos.y) + (otherPlayer.pos.x * otherPlayer.pos.y));
+
+      if (d < otherPlayer.r) {
+        socket.emit("grow", otherPlayer.r);
+      }
+    }
   });
 
   socket.on("blobEaten", (blobID) => {

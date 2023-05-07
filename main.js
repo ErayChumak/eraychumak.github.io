@@ -24,6 +24,10 @@ console.log(`[ORION.io] Created ${5000 / 5} food items.`);
 io.on("connection", (socket) => {
   console.log("[ORION.IO] Player joined:", socket.id);
 
+  socket.on("ping", (callback) => {
+    callback();
+  });
+
   const player = new ServerPlayer(socket.id);
   players[socket.id] = player;
 
@@ -52,8 +56,21 @@ io.on("connection", (socket) => {
   });
 
   socket.on("blobEaten", (blobID) => {
-    blobs[blobID].randomise();
-    io.emit("allBlobs", blobs);
+    console.log(`[ORION.IO] blob ${blobID} eaten by ${socket.id}.`);
+    const eatenBlob = blobs[blobID];
+
+    io.emit("blobHide", blobID);
+    socket.emit("grow", eatenBlob.r);
+
+    setTimeout(() => {
+      console.log("[ORION.IO] re-spawn blob:", blobID);
+      const newPos = eatenBlob.randomisePos();
+
+      io.emit("blobRespawn", {
+        blobID,
+        newPos
+      });
+    }, 2000);
   });
 
   socket.on("eat", (playerID) => {

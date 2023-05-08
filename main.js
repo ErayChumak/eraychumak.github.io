@@ -14,7 +14,7 @@ app.use("/", express.static("public"));
 const players = {};
 const blobs = {};
 
-for (let x = 0; x < 5000 / 5; x++) {
+for (let x = 0; x < 10000 / 5; x++) {
   const b = new ServerBlob(x);
   blobs[x] = b;
 }
@@ -38,6 +38,7 @@ io.on("connection", (socket) => {
     delete players[socket.id];
   });
 
+  // TODO: fix collision detection
   socket.on("updatePlayer", (updatedPlayer) => {
     player.update(updatedPlayer);
 
@@ -56,14 +57,12 @@ io.on("connection", (socket) => {
   });
 
   socket.on("blobEaten", (blobID) => {
-    console.log(`[ORION.IO] blob ${blobID} eaten by ${socket.id}.`);
     const eatenBlob = blobs[blobID];
 
     io.emit("blobHide", blobID);
     socket.emit("grow", eatenBlob.r);
 
     setTimeout(() => {
-      console.log("[ORION.IO] re-spawn blob:", blobID);
       const newPos = eatenBlob.randomisePos();
 
       io.emit("blobRespawn", {

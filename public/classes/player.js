@@ -19,12 +19,13 @@ class Player {
   }
 
   draw() {
-    const strokeSize = MAP.zoom * 4;
+    push();
+    const strokeSize = MAP.zoom * 10;
 
     fill(this.color);
     ellipse(this.pos.x, this.pos.y, this.r * 2, this.r * 2);
     fill(this.darkerColor);
-    ellipse(this.pos.x, this.pos.y, (this.r * 2) - (strokeSize), this.r * 2 - (strokeSize));
+    ellipse(this.pos.x, this.pos.y, (this.r * 2) - strokeSize, (this.r * 2) - strokeSize);
 
     fill(0);
     textAlign(CENTER);
@@ -45,6 +46,7 @@ class Player {
     line(this.pos.x + this.r, this.pos.y - this.r, this.pos.x + this.r, this.pos.y + this.r); // right
     fill(255);
     text(round(this.r * 2), this.pos.x, this.pos.y + this.r + (this.r * .5));
+    pop();
   }
 
   grow(count) {
@@ -79,7 +81,7 @@ class Player {
     if (dBetweenPlayerAndGoTo <= (this.r / 2)) {
       goTo.setMag(1);
     } else {
-      goTo.setMag(3);
+      goTo.setMag(3 * (deltaTime * 0.1));
     }
 
     this.pos.add(goTo);
@@ -89,7 +91,8 @@ class Player {
     socket.emit("updatePlayer", {
       name: this.name,
       pos: this.pos,
-      r: this.r
+      r: this.r,
+      rgb: this.rgb
     });
   }
 }

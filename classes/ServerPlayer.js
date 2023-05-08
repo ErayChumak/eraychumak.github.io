@@ -4,7 +4,6 @@ class ServerPlayer {
     this.name = "An unnamed blob";
     this.r = 64;
     this.minR = 64;
-    this.color = `rgb(${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)})`;
 
     this.pos = {
       x: Math.random() * 5000,
@@ -15,6 +14,7 @@ class ServerPlayer {
   update(player) {
     this.name = player.name;
     this.r = player.r;
+    this.rgb = player.rgb;
 
     this.pos = {
       x: player.pos.x,
